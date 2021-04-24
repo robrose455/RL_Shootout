@@ -27,10 +27,13 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     config.window = pygame.display.set_mode((config.window_width, config.window_height))
 
-    bullets = pygame.sprite.Group()
-    env = CustomEnv.CustomEnv()
+    frame_buffer = 0
     p = player.Player()
-    e =
+    e = enemy.Enemy()
+
+    bullets = pygame.sprite.Group()
+
+    env = CustomEnv.CustomEnv(e)
 
     score = 0
 
@@ -52,7 +55,7 @@ if __name__ == '__main__':
                     p_action = 1
 
                 if event.key == K_SPACE:
-                    b = bullet.Bullet(p, p, env)
+                    b = bullet.Bullet(p, p, e)
                     bullets.add(b)
 
             if event.type == pygame.KEYUP:
@@ -73,6 +76,7 @@ if __name__ == '__main__':
         p.update(p_action)
 
         env.render()
+        e.render()
         p.render()
 
         clearance_x = []
@@ -91,16 +95,24 @@ if __name__ == '__main__':
         clearance_y_norm = np.interp(clearance_y, [0, 1000], [0, 1])
 
         # X pos of agent
-        x_norm = np.interp(env.x, [0, 1000], [0, 1])
+        x_norm = np.interp(e.x, [0, 1000], [0, 1])
 
         env.observation = tf.Variable([x_norm])
 
         ai_action = env.choose_action(env.observation)
 
-        observation_, reward, done, info = env.step(ai_action)
-        score += reward
-        env.learn(env.observation, reward, observation_, done)
-        env.observation = observation_
+        if frame_buffer == 5:
+
+            observation_, reward, done, info = env.step(ai_action)
+            score += reward
+            env.learn(env.observation, reward, observation_, done)
+            env.observation = observation_
+
+            frame_buffer = 0
+
+        else:
+
+            frame_buffer += 1
 
         pygame.display.update()
 

@@ -10,7 +10,9 @@ import numpy as np
 
 class CustomEnv(gym.Env):
 
-    def __init__(self, env_config={}):
+    def __init__(self, host):
+
+        self.host = host
 
         self.nn = neural_network.NeuralNetwork(2)
 
@@ -21,19 +23,12 @@ class CustomEnv(gym.Env):
 
         self.observation = None
         self.reward = 0
-        self.done = False
         self.info = None
+        self.done = False
         self.action = 0
-        self.collided = False
 
-        self.radius = 25
-        self.x = 500
-        self.y = 100
-        self.dx = 0
-        self.dy = 0
         self.score = 0
 
-        self.alpha = 0.003
         self.gamma = 0.99
 
     def reset(self):
@@ -83,37 +78,26 @@ class CustomEnv(gym.Env):
     def step(self, action):
         # perform one step in the game logic
 
-        if self.collided:
+        self.host.update_action(action)
+
+        if self.host.collided:
 
             self.reward = -50
-            self.collided = False
+            self.host.collided = False
+
+        elif self.host.x > config.window_width - 50:
+            self.reward = -100
+
+        elif self.host.x < 50:
+            self.reward = -100
 
         else:
 
             self.reward = 1
 
-        if action == 0:
-            self.dx = 5
-
-        if action == 1:
-            self.dx = -5
-
-        self.x += self.dx
-
-        if self.x > config.window_width:
-            self.x = config.window_width
-            self.dx = -self.dx
-
-        if self.x < 0:
-            self.x = 0
-            self.dx = -self.dx
-
         return self.observation, self.reward, self.done, self.info
 
     def render(self):
-        color = (0, 0, 0)
-        color2 = (255, 0, 0)
-        # make draw calls
-        config.window.fill(color)  # fill background with color
 
-        pygame.draw.circle(config.window, color2, (self.x, self.y), self.radius)  # draw a circle
+        color = (0, 0, 0)
+        config.window. fill(color)

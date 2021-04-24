@@ -21,7 +21,7 @@ class Player:
         color2 = (255, 255, 255)
         # make draw call
 
-        pygame.draw.circle(config.window, color2, (self.x, self.y), self.radius)  # draw a cir
+        pygame.draw.circle(config.window, color2, (self.x, self.y), self.radius)  # draw a circle
 
     def update(self, action):
 
@@ -33,15 +33,14 @@ class Player:
             self.dx = 10
 
         if action == -1:
-            print("Setting Speed to 0")
             self.dx = 0
 
         self.x += self.dx
 
-        if self.x > config.window_width:
-            self.x = config.window_width
+        if self.x > config.window_width - 50:
+            self.x = config.window_width - 50
             self.dx = -self.dx
 
-        if self.x < 0:
-            self.x = 0
+        if self.x < 50:
+            self.x = 50
             self.dx = -self.dx
