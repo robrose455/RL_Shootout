@@ -21,7 +21,7 @@ class NeuralNetwork(keras.Model, ABC):
         self.v = Dense(1, activation=None)
 
         # Actor
-        self.pi = Dense(2, activation='softmax')
+        self.pi = Dense(3, activation='softmax')
 
     def __call__(self, state):
 

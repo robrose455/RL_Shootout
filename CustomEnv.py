@@ -8,17 +8,19 @@ import tensorflow_probability as tfp
 import numpy as np
 
 
+
 class CustomEnv(gym.Env):
 
-    def __init__(self, host):
+    def __init__(self, host, player):
 
         self.host = host
+        self.player = player
 
-        self.nn = neural_network.NeuralNetwork(2)
+        self.nn = neural_network.NeuralNetwork(3)
 
         high = np.array([1], dtype=np.float32)
 
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Box(-high, high)
 
         self.observation = None
@@ -32,7 +34,16 @@ class CustomEnv(gym.Env):
         self.gamma = 0.99
 
     def reset(self):
-        pass
+
+        self.score = 0
+
+        self.host.x = 500
+        self.player.x = 500
+
+        self.player.hp = 100
+        self.host.hp = 100
+
+        config.level += 1
 
     def choose_action(self, observation):
 
@@ -60,7 +71,7 @@ class CustomEnv(gym.Env):
             state_value = tf.squeeze(state_value)
             state_value_ = tf.squeeze(state_value_)
 
-            print(probs)
+            #print(probs)
 
             action_probs = tfp.distributions.Categorical(probs=probs)
 
@@ -91,9 +102,17 @@ class CustomEnv(gym.Env):
         elif self.host.x < 50:
             self.reward = -100
 
+        if self.player.collided:
+            print("+50")
+            self.reward += 500
+            self.player.collided = False
+
         else:
 
             self.reward = 1
+
+        if self.host.hp <= 0 or self.player.hp <= 0:
+            self.reset()
 
         return self.observation, self.reward, self.done, self.info
 

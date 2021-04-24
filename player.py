@@ -8,24 +8,32 @@ class Player:
 
         self.radius = 25
 
+        self.hp = 100
+
         self.x = 500
         self.y = 400
 
         self.dx = 0
         self.dy = 0
 
+        self.collided = False
+
         self.action = None
 
     def render(self):
 
         color2 = (255, 255, 255)
-        # make draw call
 
         pygame.draw.circle(config.window, color2, (self.x, self.y), self.radius)  # draw a circle
 
     def update(self, action):
 
         self.dx = 0
+
+        if self.collided:
+
+            self.hp -= 10
+
         if action == 0:
             self.dx = -10
 
