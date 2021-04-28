@@ -25,13 +25,28 @@ config.window_height = 500
 config.window_width = 1000
 config.level = 1
 
+
+def write(text, location, text_color=(255, 255, 255)):
+    textBox = config.font.render(text, False, (0, 0, 0))
+    textRect = textBox.get_rect()
+    x, y = location
+    textRect.center = (x, y)
+
+    renderedText = config.font.render(text, False, text_color)
+    config.window.blit(renderedText, textRect)
+
+
 if __name__ == '__main__':
 
     # Game Loop
-    run = True
+    run = False
+    menu = True
 
     # Game Initializations
     pygame.init()
+
+    # Initialize Font for Text
+    config.font = pygame.font.Font('freesansbold.ttf', 15)
 
     # Frame rate
     clock = pygame.time.Clock()
@@ -52,7 +67,7 @@ if __name__ == '__main__':
     bullets = pygame.sprite.Group()
 
     # Init Environment for AI to learn
-    env = environment.Environment(e, p)
+    env = environment.Environment(e, p, bullets)
 
     # Reward Accumulation
     score = 0
@@ -60,25 +75,6 @@ if __name__ == '__main__':
     # Default Actions
     p_action = -1
     ai_action = 0
-
-    # Text to be rendered onto screen
-    font = pygame.font.Font('freesansbold.ttf', 15)
-
-    player_hp = font.render(str(p.hp), False, (0, 0, 0))
-    player_hp_rect = player_hp.get_rect()
-    player_hp_rect.center = (50, 450)
-
-    enemy_hp = font.render(str(e.hp), False, (0, 0, 0))
-    enemy_hp_rect = enemy_hp.get_rect()
-    enemy_hp_rect.center = (50, 50)
-
-    level_text = font.render(str(config.level), False, (0, 0, 0))
-    level_text_rect = level_text.get_rect()
-    level_text_rect.center = (50, 250)
-
-    reward_text = font.render(str(score), False, (0, 0, 0))
-    reward_text_rect = reward_text.get_rect()
-    reward_text_rect.center = (50, 300)
 
     # X pos of agent
     init_x_enemy_norm = np.interp(500, [0, 1000], [0, 1])
@@ -91,60 +87,76 @@ if __name__ == '__main__':
     my_tensor = tf.constant([[init_x_enemy_norm], [init_x_player_norm]])
     my_variable = tf.Variable(my_tensor, dtype=np.float64)
     env.observation = my_variable
-    #SHAPE IS (2,1)
-    #print(env.observation)
+    # SHAPE IS (2,1)
+    # print(env.observation)
 
-    # Main Game Loop
-    while run:
+    while menu:
 
-        # Define Framerate
-        clock.tick(30)
+        color = (0, 0, 0)
+        config.window.fill(color)
 
-        # Event Manager
         for event in pygame.event.get():
 
             if event.type == KEYDOWN:
 
-                if event.key == K_LEFT:
-                    p_action = 0
+                if event.key == K_r:
+                    run = True
+                    done = False
+        # Main Game Loop
+        while run:
 
-                if event.key == K_RIGHT:
-                    p_action = 1
+            color = (0, 0, 0)
+            config.window.fill(color)
 
-                if event.key == K_SPACE:
-                    b = bullet.Bullet(p, p, e)
+            # Define Framerate
+            clock.tick(30)
+
+            # Event Manager
+            for event in pygame.event.get():
+
+                if event.type == KEYDOWN:
+
+                    if event.key == K_LEFT:
+                        p_action = 0
+
+                    if event.key == K_RIGHT:
+                        p_action = 1
+
+                    if event.key == K_SPACE:
+                        b = bullet.Bullet(p, p, e)
+                        bullets.add(b)
+
+                    if event.key == K_r:
+                        "Showing circle"
+                        pygame.draw.circle(config.window, (0, 255, 0), (100, 100), 500)
+
+                if event.type == pygame.KEYUP:
+
+                    if event.key == K_LEFT:
+                        p_action = -1
+
+                    if event.key == K_RIGHT:
+                        p_action = -1
+
+                if event.type == ENEMY_SHOOT:
+                    b = bullet.Bullet(e, p, e)
                     bullets.add(b)
 
-                if event.key == K_r:
-                    env.reset()
+                if event.type == QUIT:
+                    run = False
+                    menu = False
 
-            if event.type == pygame.KEYUP:
+            # Read User Input
+            p.update(p_action)
 
-                if event.key == K_LEFT:
-                    p_action = -1
+            # Update Bullet Clearance
+            for b in bullets:
+                b.update()
 
-                if event.key == K_RIGHT:
-                    p_action = -1
+            # Feed the state as input to network to receive action
+            ai_action = env.choose_action(env.observation)
 
-            if event.type == ENEMY_SHOOT:
-                b = bullet.Bullet(e, p, e)
-                bullets.add(b)
-
-            if event.type == QUIT:
-                run = False
-
-        # Read User Input
-        p.update(p_action)
-
-        # Update Bullet Clearance
-        for b in bullets:
-            b.update()
-
-        # Feed the state as input to network to receive action
-        ai_action = env.choose_action(env.observation)
-
-        # Every other frame:
-        if frame_buffer == 1:
+            # Every other frame:
 
             # Input: Action sampled from network's probabilities
             # Output: New state given by action, reward for action, run flag
@@ -155,9 +167,9 @@ if __name__ == '__main__':
 
             # Learn based on reward:
             # Input: old state before action, reward, new state after action, run flag
-            print("----------")
-            print(env.observation.value())
-            print(observation_.value())
+            # print("----------")
+            # print(env.observation.value())
+            # print(observation_.value())
             env.learn(env.observation, reward, observation_, done)
 
             # Set new state to be old state
@@ -167,24 +179,12 @@ if __name__ == '__main__':
             if done:
                 run = False
 
-            frame_buffer = 0
+            # Render text onto screen
+            write("Your Health: " + str(p.hp), (100, 450), (255, 255, 255))
+            write("Enemy Health: " + str(e.hp), (100, 50), (255, 255, 255))
+            write("Level: " + str(config.level), (100, 250), (255, 255, 255))
+            write("Internal AI Reward: " + str(score), (100, 300), (255, 255, 255))
 
-        else:
-
-            frame_buffer += 1
-
-        # Render text onto screen
-        player_hp = font.render("Your Health: " + str(p.hp), False, (255, 255, 255))
-        enemy_hp = font.render("Enemy Health: " + str(e.hp), False, (255, 255, 255))
-        level_text = font.render("Level: " + str(config.level), False, (255, 255, 255))
-        reward_text = font.render("Internal AI Reward: " + str(score), False, (255, 255, 255))
-
-        # Blit text onto screen
-        config.window.blit(player_hp, player_hp_rect)
-        config.window.blit(enemy_hp, enemy_hp_rect)
-        config.window.blit(level_text, level_text_rect)
-        config.window.blit(reward_text, reward_text_rect)
-
-        pygame.display.update()
+            pygame.display.update()
 
     pygame.quit()

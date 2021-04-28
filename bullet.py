@@ -42,6 +42,7 @@ class Bullet(pygame.sprite.Sprite):
         self.y += self.dy
 
         # Render onto screen
+
         pygame.draw.circle(config.window, (255, 255, 255), (self.x, self.y), self.radius)
 
         # Check if out of bounds

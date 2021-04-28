@@ -10,13 +10,14 @@ import numpy as np
 
 class Environment(gym.Env):
 
-    def __init__(self, host, player):
+    def __init__(self, host, player, bullets):
 
         self.n_of_actions = 3
 
         # Reference to player and enemy
         self.host = host
         self.player = player
+        self.bullets = bullets
 
         # Reference to the network
         self.nn = neural_network.NeuralNetwork(n_actions=self.n_of_actions)
@@ -107,6 +108,11 @@ class Environment(gym.Env):
     def step(self, action):
 
         # perform one step in the game logic
+
+        for b in self.bullets:
+
+            b.update()
+
         self.host.update_action(action)
 
         #print("-------")
@@ -118,17 +124,17 @@ class Environment(gym.Env):
 
         if self.host.collided:
 
-            self.reward = -500
+            self.reward = -5000
             self.host.collided = False
 
-        elif self.host.x > config.window_width - 50:
-            self.reward = -100
+        elif self.host.x > config.window_width - 100:
+            self.reward = -10000
 
-        elif self.host.x < 50:
-            self.reward = -100
+        elif self.host.x < 100:
+            self.reward = -10000
 
         if self.player.collided:
-            self.reward += 5000
+            self.reward += 500
             self.player.collided = False
 
         else:
@@ -157,6 +163,4 @@ class Environment(gym.Env):
         return observation, self.reward, self.done, self.info
 
     def render(self):
-
-        color = (0, 0, 0)
-        config.window.fill(color)
+        pass
