@@ -24,7 +24,7 @@ class Environment(gym.Env):
 
         # Define the observation and action space
         high = np.array([1], dtype=np.float32)
-        self.observation_space = spaces.Box(np.array([[-1], [-1]]), np.array([[1], [1]]), shape=(2, 1))
+        self.observation_space = spaces.Box(np.array([[-1, -1]]), np.array([[1, 1]]), shape=(1, 2))
         self.action_space = spaces.Discrete(self.n_of_actions)
 
         # State of Environment ( X pos )
@@ -70,6 +70,8 @@ class Environment(gym.Env):
         # Output: Raw Action Probabilities
         _, probs = self.nn(state)
 
+        print(probs)
+
         # Distrubution of Action Probs
         action_probabilities = tfp.distributions.Categorical(probs=probs)
 
@@ -86,7 +88,9 @@ class Environment(gym.Env):
         state_ = tf.convert_to_tensor([state_], dtype=tf.float32)
         reward = tf.convert_to_tensor(reward, dtype=tf.float32)
 
+        # Adjust Weights and Bias based on old state. new state, and reward given
         with tf.GradientTape(persistent=True) as tape:
+
             state_value, probs = self.nn(state)
             state_value_, _ = self.nn(state_)
             state_value = tf.squeeze(state_value)
@@ -154,11 +158,9 @@ class Environment(gym.Env):
         # X pos of player
         x_player_norm = np.interp(self.player.x, [0, 1000], [0, 1])
 
-        my_tensor = tf.constant([[x_enemy_norm], [x_player_norm]])
+        my_tensor = tf.constant([[x_enemy_norm, x_player_norm]])
         my_variable = tf.Variable(my_tensor, dtype=np.float64)
         observation = my_variable
-
-        #print(self.host.x)
 
         return observation, self.reward, self.done, self.info
 

@@ -26,6 +26,7 @@ config.window_width = 1000
 config.level = 1
 
 
+# Helper Function to Write Text Onto Scene
 def write(text, location, text_color=(255, 255, 255)):
     textBox = config.font.render(text, False, (0, 0, 0))
     textRect = textBox.get_rect()
@@ -84,7 +85,7 @@ if __name__ == '__main__':
 
     # Set the state to X pos of player and enemy
 
-    my_tensor = tf.constant([[init_x_enemy_norm], [init_x_player_norm]])
+    my_tensor = tf.constant([[init_x_enemy_norm, init_x_player_norm]])
     my_variable = tf.Variable(my_tensor, dtype=np.float64)
     env.observation = my_variable
     # SHAPE IS (2,1)
@@ -167,9 +168,6 @@ if __name__ == '__main__':
 
             # Learn based on reward:
             # Input: old state before action, reward, new state after action, run flag
-            # print("----------")
-            # print(env.observation.value())
-            # print(observation_.value())
             env.learn(env.observation, reward, observation_, done)
 
             # Set new state to be old state
