@@ -19,6 +19,8 @@ class Environment(gym.Env):
         self.player = player
         self.bullets = bullets
 
+        self.step_count = 0
+
         # Reference to the network
         self.nn = neural_network.NeuralNetwork(n_actions=self.n_of_actions)
 
@@ -45,6 +47,16 @@ class Environment(gym.Env):
         self.info = None
 
     # Reset Environment to Default Values
+
+    def write(self, text, location, text_color=(255, 255, 255)):
+        textBox = config.reg_font.render(text, False, (0, 0, 0))
+        textRect = textBox.get_rect()
+        x, y = location
+        textRect.center = (x, y)
+
+        renderedText = config.reg_font.render(text, False, text_color)
+        config.window.blit(renderedText, textRect)
+
     def reset(self):
 
         self.host.x = 500
@@ -70,7 +82,22 @@ class Environment(gym.Env):
         # Output: Raw Action Probabilities
         _, probs = self.nn(state)
 
-        print(probs)
+        # print(probs)
+
+        # Extract Probs to Display to UI
+        prob_numpy = probs.numpy()
+        prob_left = round(prob_numpy[0][0][0], 4)
+        prob_right = round(prob_numpy[0][0][1], 4)
+        prob_shoot = round(prob_numpy[0][0][2], 4)
+
+        print(prob_left)
+
+        self.write("Enemy Probabilities: ", (1500, 50))
+        self.write("Left: " + str(prob_left) + "%", (1500, 100))
+        self.write("Right: " + str(prob_right) + "%", (1500, 150))
+        self.write("Shoot: " + str(prob_shoot) + "%", (1500, 200))
+
+        self.write("Steps Taken: " + str(self.step_count), (1500,400))
 
         # Distrubution of Action Probs
         action_probabilities = tfp.distributions.Categorical(probs=probs)
@@ -90,7 +117,6 @@ class Environment(gym.Env):
 
         # Adjust Weights and Bias based on old state. new state, and reward given
         with tf.GradientTape(persistent=True) as tape:
-
             state_value, probs = self.nn(state)
             state_value_, _ = self.nn(state_)
             state_value = tf.squeeze(state_value)
@@ -113,14 +139,15 @@ class Environment(gym.Env):
 
         # perform one step in the game logic
 
-        for b in self.bullets:
+        self.step_count += 1
 
+        for b in self.bullets:
             b.update()
 
         self.host.update_action(action)
 
-        #print("-------")
-        #print(self.host.x)
+        # print("-------")
+        # print(self.host.x)
         # Render Updated Positions
         self.render()
         self.host.render()

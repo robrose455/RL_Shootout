@@ -73,8 +73,8 @@ class Bullet(pygame.sprite.Sprite):
     def check_life_span(self):
 
         # Basic Bounds Checking
-        if self.y < 50:
+        if self.y < 150:
             self.kill()
 
-        if self.y > 500:
+        if self.y > 650:
             self.kill()

@@ -10,8 +10,8 @@ class Player:
 
         self.hp = 1000
 
-        self.x = 500
-        self.y = 400
+        self.x = 800
+        self.y = 600
 
         self.dx = 0
         self.dy = 0
@@ -45,10 +45,10 @@ class Player:
 
         self.x += self.dx
 
-        if self.x > config.window_width - 50:
-            self.x = config.window_width - 50
+        if self.x > config.window_width - 250:
+            self.x = config.window_width - 250
             self.dx = -self.dx
 
-        if self.x < 50:
-            self.x = 50
+        if self.x < 250:
+            self.x = 250
             self.dx = -self.dx

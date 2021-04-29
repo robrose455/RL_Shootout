@@ -10,14 +10,14 @@ class Enemy:
 
         self.hp = 100
         self.radius = 25
-        self.x = 500
-        self.y = 100
+        self.x = 800
+        self.y = 200
         self.dx = 0
         self.dy = 0
 
         self.collided = False
         self.color = (0, 0, 255)
-        self.unknown_glitch = 0
+        self.countdown = 0
 
     def render(self):
 
@@ -28,30 +28,30 @@ class Enemy:
 
         # idk what the hell is happening here
         # ignores the first call
-        if self.unknown_glitch == 1:
+        self.dx = 0
 
+        if action == 0:
+            self.dx = -10
 
-            # Weird Data
-            # print(action)
-            self.dx = 0
+        if action == 1:
+            self.dx = 10
 
-            if action[0] == 0:
-                self.dx = -10
+        if action == 2:
+            if self.countdown == 2:
 
-            if action[0] == 1:
-                self.dx = 10
-
-            if action[0] == 2:
                 pygame.event.post(pygame.event.Event(ENEMY_SHOOT))
+                self.countdown = 0
 
-            if self.x > config.window_width - 25:
-                self.x = config.window_width - 25
-                self.dx = -self.dx
+            elif self.countdown > 2:
+                self.countdown = 0
 
-            if self.x < 25:
-                self.x = 25
-                self.dx = -self.dx
+            else:
+                self.countdown += 1
 
-        else:
+        if self.x > config.window_width - 250:
+            self.x = config.window_width - 250
+            self.dx = -self.dx
 
-            self.unknown_glitch += 1
+        if self.x < 250:
+            self.x = 250
+            self.dx = -self.dx
