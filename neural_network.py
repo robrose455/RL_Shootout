@@ -12,7 +12,7 @@ class NeuralNetwork(keras.Model, ABC):
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
-        self.learning_rate = 0.0003
+        self.learning_rate = 0.001
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
 
         self.fc1 = Dense(self.fc1_dims, activation='relu')

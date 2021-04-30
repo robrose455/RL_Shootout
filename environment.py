@@ -41,7 +41,7 @@ class Environment(gym.Env):
         self.reward = 0
 
         # Discount factor
-        self.gamma = 0.99
+        self.gamma = 0.5
 
         # Terminal Flag
         self.done = False
@@ -71,11 +71,12 @@ class Environment(gym.Env):
 
     def reset(self):
 
-        self.host.x = 500
-        self.player.x = 500
+        self.host.x = 800
+        self.player.x = 800
 
         if self.player.hp >= 0:
             self.host.hp = 100
+            self.player.hp = 100
 
         # Increment Level
         config.level += 1
@@ -105,14 +106,17 @@ class Environment(gym.Env):
         pygame.draw.rect(config.window, self.enemy_hp_bar, (200, 0, 1200, 100))
         pygame.draw.rect(config.window, self.player_hp_bar, (200, 700, 1200, 100))
 
-        self.write("Enemy Probabilities: ", (1500, 50), 1)
-        self.write("Left: " + str(prob_left) + "%", (1500, 100), 1)
-        self.write("Right: " + str(prob_right) + "%", (1500, 150), 1)
+        self.write("AI Data", (1500, 50), 0)
+        self.write("Enemy Probabilities: ", (1500, 100), 1)
+        self.write("Left: " + str(prob_left) + "%", (1500, 150), 1)
+        self.write("Right: " + str(prob_right) + "%", (1500, 175), 1)
         self.write("Shoot: " + str(prob_shoot) + "%", (1500, 200), 1)
 
-        self.write("Steps Taken: " + str(self.step_count), (1500, 400), 1)
+        self.write("Steps Taken: ", (1500, 250), 1)
+        self.write(str(self.step_count), (1500, 275), 1)
 
-        self.write("Learning Rate: " + str(self.nn.learning_rate), (1500, 500), 1)
+        self.write("Learning Rate: " + str(self.nn.learning_rate), (1500, 400), 1)
+        self.write("X Position: " + str(self.host.x), (1500, 425), 1)
 
         # Distrubution of Action Probs
         action_probabilities = tfp.distributions.Categorical(probs=probs)
@@ -170,6 +174,8 @@ class Environment(gym.Env):
         self.host.render()
         self.player.render()
 
+        # Reward Structure
+
         self.reward = -1
 
         if self.host.collided:
@@ -178,8 +184,7 @@ class Environment(gym.Env):
             self.enemy_hp_bar = (255, 0, 0)
 
         if self.host.x > config.window_width - 300:
-            # self.reward += -10
-
+            # self.reward += -5
             pass
 
         if self.host.x < 300:
@@ -195,27 +200,25 @@ class Environment(gym.Env):
             self.player_hp_bar = (255, 0, 0)
 
         if abs(self.player.x - self.host.x) <= 50:
-            #print(abs(self.player.x - self.host.x))
-            #self.reward += 2
+            # print(abs(self.player.x - self.host.x))
+            # self.reward += 2
             pass
 
-        print("--------")
-        print(self.host.dx)
         if self.host.hp <= 0 or self.player.hp <= 0:
             self.reset()
 
         if self.player.hp <= 0:
             self.done = True
 
+        center_discount = abs(self.host.x - self.player.x) / self.player.x
+        print(center_discount)
         if self.host.dx < 0:
-            #print("Yes")
-            self.reward += -2
+            # print("Yes")
+            self.reward += +2 * (1 - center_discount)
 
         if self.host.dx > 0:
-            #print("Bad")
-            self.reward += -2
-
-        print(self.reward)
+            # print("Bad")
+            self.reward += +2 * (1 - center_discount)
 
 
         # X pos of agent

@@ -8,7 +8,7 @@ class Player:
 
         self.radius = 25
 
-        self.hp = 1000
+        self.hp = 100
 
         self.x = 800
         self.y = 600

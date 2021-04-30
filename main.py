@@ -149,6 +149,8 @@ if __name__ == '__main__':
                     run, p, e, bullets, env, score, env.observation = reset_game()
 
             if event.type == RESET:
+
+                print("WWWWWWWWWWWWWWWW")
                 done = False
                 run, p, e, bullets, env, score, env.observation = reset_game()
 
@@ -238,7 +240,7 @@ if __name__ == '__main__':
             write("Enemy Health: " + str(e.hp), (800, 50), (255, 255, 255), 0)
             write("Level " + str(config.level), (800, 400), (255, 0, 0), 0)
 
-            reward_color = (255, 255, 255)
+            reward_color = (0, 255, 0)
             if score < 0:
                 reward_color = (255, 0, 0)
 
@@ -253,6 +255,7 @@ if __name__ == '__main__':
 
             pygame.display.update()
             if score > 200:
+                run = False
                 print("RESET")
                 pygame.event.post(pygame.event.Event(RESET))
 
