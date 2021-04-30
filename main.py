@@ -14,9 +14,17 @@ from pygame.locals import (
     KEYDOWN,
     QUIT,
     K_SPACE,
-    K_r
+    K_r,
+    K_1,
+    K_2,
+    K_3,
+    K_4,
+    K_5
 
 )
+
+run = False
+menu = True
 
 # Custom Events
 ENEMY_SHOOT = pygame.USEREVENT + 1
@@ -46,6 +54,63 @@ def write(text, location, text_color, font_type):
 
         renderedText = config.reg_font.render(text, False, text_color)
         config.window.blit(renderedText, textRect)
+
+
+def render_menu_text():
+
+    write("Welcome to RL Shootout!", (800, 150), (255, 255, 255), 0)
+    write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255), 0)
+    write("Spacebar --- Shoot", (800, 300), (255, 255, 255), 0)
+
+    write("Choose a reward structure to start!", (800, 400), (255, 255, 255), 0)
+    write("(1) Simple Left", (800, 450), (255, 255, 255), 0)
+    write("(2) Simple Right", (800, 500), (255, 255, 255), 0)
+    write("(3) Stay Close to the Player", (800, 550), (255, 255, 255), 0)
+    write("(4) Standard Shootout - Unstable", (800, 600), (255, 255, 255), 0)
+
+
+def render_main_text():
+
+    # HP Bar Surface
+    pygame.draw.rect(config.window, env.enemy_hp_bar, (200, 0, 1200, 100))
+    pygame.draw.rect(config.window, env.player_hp_bar, (200, 700, 1200, 100))
+
+    # Text Displayed on Center
+    write("Your Health: " + str(p.hp), (800, 750), (255, 255, 255), 0)
+    write("Enemy Health: " + str(e.hp), (800, 50), (255, 255, 255), 0)
+    write("Level " + str(config.level), (800, 400), (255, 0, 0), 0)
+
+    # Text Displayed on Left
+    write("Controls", (100, 100), (255, 255, 255), 0)
+    write("Left & Right: Arrow Keys", (100, 150), (255, 255, 255), 1)
+    write("Shoot: Spacebar", (100, 175), (255, 255, 255), 1)
+    write("Reset Game: R", (100, 200), (255, 255, 255), 1)
+
+    # Text Displayed On Right
+    write("AI Data", (1500, 50), (255, 255, 255), 0)
+    write("Enemy Probabilities: ", (1500, 100), (255, 255, 255), 1)
+    write("Left: " + str(env.prob_left) + "%", (1500, 150), (255, 255, 255), 1)
+    write("Right: " + str(env.prob_right) + "%", (1500, 175), (255, 255, 255), 1)
+    write("Shoot: " + str(env.prob_shoot) + "%", (1500, 200), (255, 255, 255), 1)
+
+    write("Steps Taken: ", (1500, 250), (255, 255, 255), 1)
+    write(str(env.step_count), (1500, 275), (255, 255, 255), 1)
+
+    write("Learning Rate: " + str(env.nn.learning_rate), (1500, 400), (255, 255, 255), 1)
+    write("X Position: " + str(env.host.x), (1500, 425), (255, 255, 255), 1)
+
+    reward_color = (0, 255, 0)
+    if score < 0:
+        reward_color = (255, 0, 0)
+
+    write("Internal AI Reward: ", (1500, 300), (255, 255, 255), 1)
+    write(str(score), (1500, 325), reward_color, 1)
+
+    # Borders
+    pygame.draw.rect(config.window, (255, 255, 255), (200, 0, 5, 800))
+    pygame.draw.rect(config.window, (255, 255, 255), (1400, 0, 5, 800))
+    pygame.draw.rect(config.window, (255, 255, 255), (200, 100, 1200, 5))
+    pygame.draw.rect(config.window, (255, 255, 255), (200, 700, 1200, 5))
 
 
 def reset_game():
@@ -81,10 +146,6 @@ def reset_game():
 
 
 if __name__ == '__main__':
-
-    # Game Loop
-    run = False
-    menu = True
 
     # Game Initializations
     pygame.init()
@@ -140,28 +201,43 @@ if __name__ == '__main__':
         color = (0, 0, 0)
         config.window.fill(color)
 
+        render_menu_text()
+
         for event in pygame.event.get():
 
             if event.type == KEYDOWN:
 
-                if event.key == K_r:
+                if event.key == K_1:
+
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
+                    env.reward_mode = 1
+
+                if event.key == K_2:
+
+                    done = False
+                    run, p, e, bullets, env, score, env.observation = reset_game()
+                    env.reward_mode = 2
+
+                if event.key == K_3:
+
+                    done = False
+                    run, p, e, bullets, env, score, env.observation = reset_game()
+                    env.reward_mode = 3
+
+                if event.key == K_4:
+
+                    done = False
+                    run, p, e, bullets, env, score, env.observation = reset_game()
+                    env.reward_mode = 4
 
             if event.type == RESET:
-
-                print("WWWWWWWWWWWWWWWW")
                 done = False
                 run, p, e, bullets, env, score, env.observation = reset_game()
 
             if event.type == QUIT:
                 run = False
                 menu = False
-
-        write("Welcome to RL Shootout!", (800, 150), (255, 255, 255), 0)
-        write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255), 0)
-        write("Spacebar --- Shoot", (800, 300), (255, 255, 255), 0)
-        write("Press 'R' to start!", (800, 400), (255, 255, 255), 0)
 
         # Main Game Loop
         while run:
@@ -235,28 +311,12 @@ if __name__ == '__main__':
             if done:
                 run = False
 
-            # Render text onto screen
-            write("Your Health: " + str(p.hp), (800, 750), (255, 255, 255), 0)
-            write("Enemy Health: " + str(e.hp), (800, 50), (255, 255, 255), 0)
-            write("Level " + str(config.level), (800, 400), (255, 0, 0), 0)
-
-            reward_color = (0, 255, 0)
-            if score < 0:
-                reward_color = (255, 0, 0)
-
-            write("Internal AI Reward: ", (1500, 300), (255, 255, 255), 1)
-
-            write(str(score), (1500, 325), reward_color, 1)
-
-            pygame.draw.rect(config.window, (255, 255, 255), (200, 0, 5, 800))
-            pygame.draw.rect(config.window, (255, 255, 255), (1400, 0, 5, 800))
-            pygame.draw.rect(config.window, (255, 255, 255), (200, 100, 1200, 5))
-            pygame.draw.rect(config.window, (255, 255, 255), (200, 700, 1200, 5))
+            render_main_text()
 
             pygame.display.update()
+
             if score > 200:
                 run = False
-                print("RESET")
                 pygame.event.post(pygame.event.Event(RESET))
 
         pygame.display.update()
