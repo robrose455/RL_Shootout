@@ -4,10 +4,10 @@ Basic shootout game with deep reinforcement learning enemy ai
 
 Dependancies:
 
-numpy
-tensorflow
-pygame
-gym  -- version 0.17.3 // newest version not compataible
+numpy //
+tensorflow //
+pygame //
+gym  -- version 0.17.3
 
 pip 21.0.1
 python 3.9
