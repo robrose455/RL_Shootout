@@ -160,6 +160,9 @@ class Environment(gym.Env):
             if self.host.dx > 0:
                 self.reward += +2 * (1 - center_discount)
 
+            if self.host.x == self.player.x:
+                self.reward += 20
+
         if mode == 4:
 
             self.reward = 0

@@ -93,15 +93,23 @@ def render_main_text():
     if env.reward_mode == 1:
         write("Simple Left", (100, 350), (255, 255, 255), 1)
         write("* STABLE *", (100, 375), (0, 255, 0), 1)
+        write("Moving Left: +1", (100, 425), (255, 255, 255), 1)
+        write("Moving Right: -1", (100, 450), (255, 255, 255), 1)
     if env.reward_mode == 2:
         write("Simple Right", (100, 350), (255, 255, 255), 1)
         write("* STABLE *", (100, 375), (0, 255, 0), 1)
+        write("Moving Left: -1", (100, 425), (255, 255, 255), 1)
+        write("Moving Right: +1", (100, 450), (255, 255, 255), 1)
     if env.reward_mode == 3:
         write("Stay Close", (100, 350), (255, 255, 255), 1)
         write("* UNSTABLE *", (100, 375), (255, 255, 0), 1)
+        write("+ (1-Distance to Player)", (100, 425), (255, 255, 255), 1)
+        write("AI x = Player x: +20", (100, 450), (255, 255, 255), 1)
     if env.reward_mode == 4:
         write("Standard Shootout", (100, 350), (255, 255, 255), 1)
         write("* UNSTABLE *", (100, 375), (255, 0, 0), 1)
+        write("Shoot Player +5", (100, 425), (255, 255, 255), 1)
+        write("Get Hit -5", (100, 450), (255, 255, 255), 1)
 
     # Text Displayed On Right
     write("AI Data", (1500, 50), (255, 255, 255), 0)
