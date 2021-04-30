@@ -18,13 +18,14 @@ from pygame.locals import (
     K_1,
     K_2,
     K_3,
-    K_4,
-    K_5
+    K_4
 
 )
 
 run = False
 menu = True
+
+reward_mode = 0
 
 # Custom Events
 ENEMY_SHOOT = pygame.USEREVENT + 1
@@ -57,20 +58,21 @@ def write(text, location, text_color, font_type):
 
 
 def render_menu_text():
-
     write("Welcome to RL Shootout!", (800, 150), (255, 255, 255), 0)
-    write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255), 0)
-    write("Spacebar --- Shoot", (800, 300), (255, 255, 255), 0)
+    write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255), 1)
+    write("Spacebar --- Shoot", (800, 300), (255, 255, 255), 1)
 
-    write("Choose a reward structure to start!", (800, 400), (255, 255, 255), 0)
-    write("(1) Simple Left", (800, 450), (255, 255, 255), 0)
-    write("(2) Simple Right", (800, 500), (255, 255, 255), 0)
-    write("(3) Stay Close to the Player", (800, 550), (255, 255, 255), 0)
-    write("(4) Standard Shootout - Unstable", (800, 600), (255, 255, 255), 0)
+    write("Choose a Reward Structure:", (800, 400), (255, 255, 255), 0)
+    write("(1) Simple Left", (800, 450), (255, 255, 255), 1)
+    write("(2) Simple Right", (800, 500), (255, 255, 255), 1)
+    write("(3) Stay Close to the Player", (800, 550), (255, 255, 255), 1)
+    write("(4) Standard Shootout - Unstable", (800, 600), (255, 255, 255), 1)
+
+    write("Capstone Demo of Reinforcement Learning in Games", (800, 725), (255, 255, 255), 1)
+    write("By Rob Rose", (800, 750), (255, 255, 255), 1)
 
 
 def render_main_text():
-
     # HP Bar Surface
     pygame.draw.rect(config.window, env.enemy_hp_bar, (200, 0, 1200, 100))
     pygame.draw.rect(config.window, env.player_hp_bar, (200, 700, 1200, 100))
@@ -85,6 +87,21 @@ def render_main_text():
     write("Left & Right: Arrow Keys", (100, 150), (255, 255, 255), 1)
     write("Shoot: Spacebar", (100, 175), (255, 255, 255), 1)
     write("Reset Game: R", (100, 200), (255, 255, 255), 1)
+
+    write("Reward Structure Used:", (100, 300), (255, 255, 255), 1)
+
+    if env.reward_mode == 1:
+        write("Simple Left", (100, 350), (255, 255, 255), 1)
+        write("* STABLE *", (100, 375), (0, 255, 0), 1)
+    if env.reward_mode == 2:
+        write("Simple Right", (100, 350), (255, 255, 255), 1)
+        write("* STABLE *", (100, 375), (0, 255, 0), 1)
+    if env.reward_mode == 3:
+        write("Stay Close", (100, 350), (255, 255, 255), 1)
+        write("* UNSTABLE *", (100, 375), (255, 255, 0), 1)
+    if env.reward_mode == 4:
+        write("Standard Shootout", (100, 350), (255, 255, 255), 1)
+        write("* UNSTABLE *", (100, 375), (255, 0, 0), 1)
 
     # Text Displayed On Right
     write("AI Data", (1500, 50), (255, 255, 255), 0)
@@ -208,30 +225,33 @@ if __name__ == '__main__':
             if event.type == KEYDOWN:
 
                 if event.key == K_1:
-
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
                     env.reward_mode = 1
 
                 if event.key == K_2:
-
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
                     env.reward_mode = 2
 
                 if event.key == K_3:
-
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
                     env.reward_mode = 3
 
                 if event.key == K_4:
-
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
                     env.reward_mode = 4
 
             if event.type == RESET:
+
+                color = (0, 0, 0)
+                config.window.fill(color)
+                write("You Lost...", (800, 400), (255, 0, 0), 0)
+                pygame.display.update()
+                pygame.time.wait(3000)
+
                 done = False
                 run, p, e, bullets, env, score, env.observation = reset_game()
 
@@ -314,10 +334,6 @@ if __name__ == '__main__':
             render_main_text()
 
             pygame.display.update()
-
-            if score > 200:
-                run = False
-                pygame.event.post(pygame.event.Event(RESET))
 
         pygame.display.update()
 

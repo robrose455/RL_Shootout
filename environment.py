@@ -1,12 +1,13 @@
 import gym
 from gym import spaces
-import pygame
 import config
 import tensorflow as tf
 import neural_network
 import tensorflow_probability as tfp
 import numpy as np
+import pygame
 
+RESET = pygame.USEREVENT + 2
 
 class Environment(gym.Env):
 
@@ -50,7 +51,7 @@ class Environment(gym.Env):
         # Terminal Flag
         self.done = False
 
-        self.reward_mode = 1
+        self.reward_mode = 0
 
         self.info = None
 
@@ -160,27 +161,13 @@ class Environment(gym.Env):
 
         if mode == 4:
 
-            self.reward = -1
+            self.reward = 0
 
             if self.host.collided:
                 self.reward = -10
 
-            if self.host.x > config.window_width - 300:
-                self.reward += -5
-
-            if self.host.x < 300:
-                self.reward += -10
-
             if self.player.collided:
                 self.reward += 5
-
-            center_discount = abs(self.host.x - self.player.x) / self.player.x
-
-            if self.host.dx < 0:
-                self.reward += +2 * (1 - center_discount)
-
-            if self.host.dx > 0:
-                self.reward += +2 * (1 - center_discount)
 
     def step(self, action):
 
@@ -206,17 +193,18 @@ class Environment(gym.Env):
         self.calculate_reward(self.reward_mode)
 
         if self.host.collided:
-
             self.host.collided = False
             self.enemy_hp_bar = (255, 0, 0)
 
         if self.player.collided:
-
             self.player.collided = False
             self.player_hp_bar = (255, 0, 0)
 
-        if self.host.hp <= 0 or self.player.hp <= 0:
+        if self.host.hp <= 0:
             self.reset()
+
+        if self.player.hp <= 0:
+            pygame.event.post(pygame.event.Event(RESET))
 
         if self.player.hp <= 0:
             self.done = True
