@@ -9,6 +9,7 @@ import pygame
 
 RESET = pygame.USEREVENT + 2
 
+
 class Environment(gym.Env):
 
     def __init__(self, host, player, bullets):

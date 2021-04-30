@@ -49,7 +49,5 @@ class Enemy:
         if self.x > config.window_width - 250:
             self.x = config.window_width - 250
 
-
         if self.x < 250:
             self.x = 250
-

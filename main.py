@@ -252,8 +252,10 @@ if __name__ == '__main__':
                 pygame.display.update()
                 pygame.time.wait(3000)
 
+                mode = env.reward_mode
                 done = False
                 run, p, e, bullets, env, score, env.observation = reset_game()
+                env.reward_mode = mode
 
             if event.type == QUIT:
                 run = False
