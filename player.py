@@ -16,15 +16,15 @@ class Player:
         self.dx = 0
         self.dy = 0
 
+        self.color = (37, 5, 153)
+
         self.collided = False
 
         self.action = None
 
     def render(self):
 
-        color2 = (255, 255, 255)
-
-        pygame.draw.circle(config.window, color2, (self.x, self.y), self.radius)  # draw a circle
+        pygame.draw.circle(config.window, self.color, (self.x, self.y), self.radius)  # draw a circle
 
     def update(self, action):
 

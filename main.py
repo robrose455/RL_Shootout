@@ -20,6 +20,7 @@ from pygame.locals import (
 
 # Custom Events
 ENEMY_SHOOT = pygame.USEREVENT + 1
+RESET = pygame.USEREVENT + 2
 
 config.window_height = 800
 config.window_width = 1600
@@ -27,14 +28,24 @@ config.level = 1
 
 
 # Helper Function to Write Text Onto Scene
-def write(text, location, text_color=(255, 255, 255)):
-    textBox = config.reg_font.render(text, False, (0, 0, 0))
-    textRect = textBox.get_rect()
-    x, y = location
-    textRect.center = (x, y)
+def write(text, location, text_color, font_type):
+    if font_type == 0:
+        textBox = config.headline_font.render(text, False, (0, 0, 0))
+        textRect = textBox.get_rect()
+        x, y = location
+        textRect.center = (x, y)
 
-    renderedText = config.reg_font.render(text, False, text_color)
-    config.window.blit(renderedText, textRect)
+        renderedText = config.headline_font.render(text, False, text_color)
+        config.window.blit(renderedText, textRect)
+
+    if font_type == 1:
+        textBox = config.reg_font.render(text, False, (0, 0, 0))
+        textRect = textBox.get_rect()
+        x, y = location
+        textRect.center = (x, y)
+
+        renderedText = config.reg_font.render(text, False, text_color)
+        config.window.blit(renderedText, textRect)
 
 
 def reset_game():
@@ -137,19 +148,26 @@ if __name__ == '__main__':
                     done = False
                     run, p, e, bullets, env, score, env.observation = reset_game()
 
+            if event.type == RESET:
+                done = False
+                run, p, e, bullets, env, score, env.observation = reset_game()
+
             if event.type == QUIT:
                 run = False
                 menu = False
 
-        write("Welcome to RL Shootout!", (800, 150), (255, 255, 255))
-        write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255))
-        write("Spacebar --- Shoot", (800, 300), (255, 255, 255))
-        write("Press 'R' to start!", (800, 400), (255, 255, 255))
+        write("Welcome to RL Shootout!", (800, 150), (255, 255, 255), 0)
+        write("Left and Right Arrow Keys --- Move", (800, 250), (255, 255, 255), 0)
+        write("Spacebar --- Shoot", (800, 300), (255, 255, 255), 0)
+        write("Press 'R' to start!", (800, 400), (255, 255, 255), 0)
+
         # Main Game Loop
         while run:
 
             color = (0, 0, 0)
             config.window.fill(color)
+
+            pygame.draw.rect(config.window, (74, 71, 71), (200, 50, 1200, 700))
 
             # Define Framerate
             clock.tick(30)
@@ -216,13 +234,17 @@ if __name__ == '__main__':
                 run = False
 
             # Render text onto screen
-            write("Your Health: " + str(p.hp), (800, 750), (255, 255, 255))
-            write("Enemy Health: " + str(e.hp), (800, 50), (255, 255, 255))
-            write("Level " + str(config.level), (800, 400), (255, 0,  0))
+            write("Your Health: " + str(p.hp), (800, 750), (255, 255, 255), 0)
+            write("Enemy Health: " + str(e.hp), (800, 50), (255, 255, 255), 0)
+            write("Level " + str(config.level), (800, 400), (255, 0, 0), 0)
 
-            write("Internal AI Reward: ", (1500, 300), (255, 255, 255))
+            reward_color = (255, 255, 255)
+            if score < 0:
+                reward_color = (255, 0, 0)
 
-            write(str(score), (1500, 325), (255, 255, 255))
+            write("Internal AI Reward: ", (1500, 300), (255, 255, 255), 1)
+
+            write(str(score), (1500, 325), reward_color, 1)
 
             pygame.draw.rect(config.window, (255, 255, 255), (200, 0, 5, 800))
             pygame.draw.rect(config.window, (255, 255, 255), (1400, 0, 5, 800))
@@ -230,6 +252,9 @@ if __name__ == '__main__':
             pygame.draw.rect(config.window, (255, 255, 255), (200, 700, 1200, 5))
 
             pygame.display.update()
+            if score > 200:
+                print("RESET")
+                pygame.event.post(pygame.event.Event(RESET))
 
         pygame.display.update()
 

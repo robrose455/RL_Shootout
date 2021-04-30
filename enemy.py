@@ -16,7 +16,7 @@ class Enemy:
         self.dy = 0
 
         self.collided = False
-        self.color = (0, 0, 255)
+        self.color = (214, 4, 18)
         self.countdown = 0
 
     def render(self):
@@ -26,8 +26,6 @@ class Enemy:
 
     def update_action(self, action):
 
-        # idk what the hell is happening here
-        # ignores the first call
         self.dx = 0
 
         if action == 0:
@@ -50,8 +48,8 @@ class Enemy:
 
         if self.x > config.window_width - 250:
             self.x = config.window_width - 250
-            self.dx = -self.dx
+
 
         if self.x < 250:
             self.x = 250
-            self.dx = -self.dx
+

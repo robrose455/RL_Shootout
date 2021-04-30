@@ -20,6 +20,8 @@ class Environment(gym.Env):
         self.bullets = bullets
 
         self.step_count = 0
+        self.enemy_hp_bar = (0, 0, 0)
+        self.player_hp_bar = (255, 255, 255)
 
         # Reference to the network
         self.nn = neural_network.NeuralNetwork(n_actions=self.n_of_actions)
@@ -48,14 +50,24 @@ class Environment(gym.Env):
 
     # Reset Environment to Default Values
 
-    def write(self, text, location, text_color=(255, 255, 255)):
-        textBox = config.reg_font.render(text, False, (0, 0, 0))
-        textRect = textBox.get_rect()
-        x, y = location
-        textRect.center = (x, y)
+    def write(self, text, location, font_type, text_color=(255, 255, 255)):
+        if font_type == 0:
+            textBox = config.headline_font.render(text, False, (0, 0, 0))
+            textRect = textBox.get_rect()
+            x, y = location
+            textRect.center = (x, y)
 
-        renderedText = config.reg_font.render(text, False, text_color)
-        config.window.blit(renderedText, textRect)
+            renderedText = config.headline_font.render(text, False, text_color)
+            config.window.blit(renderedText, textRect)
+
+        if font_type == 1:
+            textBox = config.reg_font.render(text, False, (0, 0, 0))
+            textRect = textBox.get_rect()
+            x, y = location
+            textRect.center = (x, y)
+
+            renderedText = config.reg_font.render(text, False, text_color)
+            config.window.blit(renderedText, textRect)
 
     def reset(self):
 
@@ -90,14 +102,17 @@ class Environment(gym.Env):
         prob_right = round(prob_numpy[0][0][1], 4)
         prob_shoot = round(prob_numpy[0][0][2], 4)
 
-        print(prob_left)
+        pygame.draw.rect(config.window, self.enemy_hp_bar, (200, 0, 1200, 100))
+        pygame.draw.rect(config.window, self.player_hp_bar, (200, 700, 1200, 100))
 
-        self.write("Enemy Probabilities: ", (1500, 50))
-        self.write("Left: " + str(prob_left) + "%", (1500, 100))
-        self.write("Right: " + str(prob_right) + "%", (1500, 150))
-        self.write("Shoot: " + str(prob_shoot) + "%", (1500, 200))
+        self.write("Enemy Probabilities: ", (1500, 50), 1)
+        self.write("Left: " + str(prob_left) + "%", (1500, 100), 1)
+        self.write("Right: " + str(prob_right) + "%", (1500, 150), 1)
+        self.write("Shoot: " + str(prob_shoot) + "%", (1500, 200), 1)
 
-        self.write("Steps Taken: " + str(self.step_count), (1500,400))
+        self.write("Steps Taken: " + str(self.step_count), (1500, 400), 1)
+
+        self.write("Learning Rate: " + str(self.nn.learning_rate), (1500, 500), 1)
 
         # Distrubution of Action Probs
         action_probabilities = tfp.distributions.Categorical(probs=probs)
@@ -116,7 +131,7 @@ class Environment(gym.Env):
         reward = tf.convert_to_tensor(reward, dtype=tf.float32)
 
         # Adjust Weights and Bias based on old state. new state, and reward given
-        with tf.GradientTape(persistent=True) as tape:
+        with tf.GradientTape() as tape:
             state_value, probs = self.nn(state)
             state_value_, _ = self.nn(state_)
             state_value = tf.squeeze(state_value)
@@ -138,6 +153,8 @@ class Environment(gym.Env):
     def step(self, action):
 
         # perform one step in the game logic
+        self.enemy_hp_bar = (0, 0, 0)
+        self.player_hp_bar = (0, 0, 0)
 
         self.step_count += 1
 
@@ -153,31 +170,53 @@ class Environment(gym.Env):
         self.host.render()
         self.player.render()
 
+        self.reward = -1
+
         if self.host.collided:
-
-            self.reward = -5000
+            # self.reward = -10
             self.host.collided = False
+            self.enemy_hp_bar = (255, 0, 0)
 
-        elif self.host.x > config.window_width - 100:
-            self.reward = -10000
+        if self.host.x > config.window_width - 300:
+            # self.reward += -10
 
-        elif self.host.x < 100:
-            self.reward = -10000
+            pass
 
+        if self.host.x < 300:
+            # self.reward += -10
+
+            pass
+
+        # Shot the player
         if self.player.collided:
-            self.reward += 500
+            # self.reward += 5
             self.player.collided = False
 
-        else:
+            self.player_hp_bar = (255, 0, 0)
 
-            self.reward = -50
+        if abs(self.player.x - self.host.x) <= 50:
+            #print(abs(self.player.x - self.host.x))
+            #self.reward += 2
+            pass
 
+        print("--------")
+        print(self.host.dx)
         if self.host.hp <= 0 or self.player.hp <= 0:
             self.reset()
 
         if self.player.hp <= 0:
-            print("True")
             self.done = True
+
+        if self.host.dx < 0:
+            #print("Yes")
+            self.reward += -2
+
+        if self.host.dx > 0:
+            #print("Bad")
+            self.reward += -2
+
+        print(self.reward)
+
 
         # X pos of agent
         x_enemy_norm = np.interp(self.host.x, [0, 1000], [0, 1])
